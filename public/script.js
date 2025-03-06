@@ -42,33 +42,32 @@ document.addEventListener("DOMContentLoaded", function () {
     "#Bank-Address-City",
     "#Bank-Address-postcode"
   );
-  initializeCheckboxToggle(
-    "#criteria_third_party_billing_chkbox",
-    "#criteria_third_party_billing_input"
-  );
-  initializeCheckboxToggle(
-    "#criteria_third_party_contract_chkbox",
-    "#criteria_third_party_contract_input"
-  );
-  initializeCheckboxToggle(
-    "#criteria_third_party_wholesale_chkbox",
-    "#criteria_third_party_wholesale"
-  );
+  //   initializeCheckboxToggle(
+  //     "#criteria_third_party_billing_chkbox",
+  //     "#criteria_third_party_billing_input"
+  //   );
+  //   initializeCheckboxToggle(
+  //     "#criteria_third_party_contract_chkbox",
+  //     "#criteria_third_party_contract_input"
+  //   );
+  //   initializeCheckboxToggle(
+  //     "#criteria_third_party_wholesale_chkbox",
+  //     "#criteria_third_party_wholesale"
+  //   );
   initializeMultiSelect("#criteria_other_providers", "Select Other providers");
   initializeMultiSelect("#Criteria-Channels", "Select Channels");
   // Franchise feature
-  toggleCheckboxes(
-    "Criteria-Franchise-checkbox",
-    "Criteria-Franchisee-Checkbox"
-  );
-  toggleCheckboxes(
-    "Criteria-Franchisee-Checkbox",
-    "Criteria-Franchise-checkbox"
-  );
+  //   toggleCheckboxes(
+  //     "Criteria-Franchise-checkbox",
+  //     "Criteria-Franchisee-Checkbox"
+  //   );
+  //   toggleCheckboxes(
+  //     "Criteria-Franchisee-Checkbox",
+  //     "Criteria-Franchise-checkbox"
+  //   );
   addDefaultOptionToSelect("set-default-select", "Select");
   addDefaultOptionToSelect("select-modern", "Select your address");
   initializeMultiStepForm();
-  setCurrentDate("#partner_agreement_cur_date");
   toggleButtonWithClass("#confirm_agreement_chkbox", "#partner_agreement_btn");
   switchForm(
     "#confirm_agreement_chkbox",
@@ -212,7 +211,7 @@ async function generatePDFPartner(title, formData) {
     // Generate PDF using html2pdf
     const pdf = await html2pdf()
       .set({
-        margin: [10, 10, 10, 10], // Top, Right, Bottom, Left
+        margin: [25, 30, 25, 25], // Top, Right, Bottom, Left
         filename: title,
         image: { type: "jpeg", quality: 0.98 },
         html2canvas: {
@@ -325,8 +324,9 @@ function sameAsAddr(eventId, addr1, addr2, addr3, city, postcode) {
 }
 
 function updateElementValue(sourceId, targetId) {
+  console.log("targetId:", sourceId, targetId);
   // Get the HTML content of the source element
-  const sourceContent = document.getElementById(sourceId).value || "__________";
+  const sourceContent = document.getElementById(sourceId).value || "";
   // Set the content of the target element
   document.getElementById(targetId).innerHTML = `<strong>${
     " " + sourceContent
@@ -998,14 +998,15 @@ function initializeMultiStepForm() {
       createForm.style.display = "none";
       partnerAgreementForm.style.display = "block";
       document.querySelector("#step7").classList.add("active");
+      setCurrentDate("#partner_agreement_cur_date");
       updateElementValue(
         "Company-Details-Company-name",
         "company_name_replace"
       );
-      updateElementValue(
-        "Company-Details-Trading-Name",
-        "trading_name_replace"
-      );
+      //   updateElementValue(
+      //     "Company-Details-Trading-Name",
+      //     "trading_name_replace"
+      //   );
       updateElementValue(
         "Company-Details-Company-Type",
         "company_type_replace"
@@ -1014,20 +1015,18 @@ function initializeMultiStepForm() {
       updateElementValue("Reg-Address-City", "city_replace");
       updateElementValue("Reg-Address-Postcode", "postcode_replace");
       // pdf generation
+      setCurrentDate("#pdf_partner_agree_date");
       updateElementValue(
         "Company-Details-Company-name",
         "pdf_company_name_replace"
       );
       updateElementValue(
-        "Company-Details-Trading-Name",
-        "pdf_trading_name_replace"
+        "Company-Details-Company-Type",
+        "pdf_company_type_replace"
       );
       updateElementValue("Reg-Address-First-Line", "pdf_addr_replace");
-      updateElementValue(
-        "Company-Details-VAT-registration",
-        "pdf_reg_number_replace"
-      );
-      setCurrentDate("#pdf_partner_agree_date");
+      updateElementValue("Reg-Address-City", "pdf_town_replace");
+      updateElementValue("Reg-Address-Postcode", "pdf_postcode_replace");
     } catch (error) {
       console.error("Error sending data to webhook:", error);
       alert("There was an error submitting your data. Please try again.");
@@ -1109,19 +1108,19 @@ function addDefaultOptionToSelect(selectClass, text) {
   });
 }
 // Franchise checkboxes
-function toggleCheckboxes(clicked, other) {
-  const clickedCheckbox = document.getElementById(clicked);
-  const otherCheckbox = document.getElementById(other);
-  if (!clickedCheckbox || !otherCheckbox) {
-    console.error(`One or both checkboxes not found: ${clicked}, ${other}`);
-    return; // Exit the function if elements don't exist
-  }
-  clickedCheckbox.addEventListener("change", function () {
-    if (clickedCheckbox.checked) {
-      otherCheckbox.checked = false;
-    }
-  });
-}
+// function toggleCheckboxes(clicked, other) {
+//   const clickedCheckbox = document.getElementById(clicked);
+//   const otherCheckbox = document.getElementById(other);
+//   if (!clickedCheckbox || !otherCheckbox) {
+//     console.error(`One or both checkboxes not found: ${clicked}, ${other}`);
+//     return; // Exit the function if elements don't exist
+//   }
+//   clickedCheckbox.addEventListener("change", function () {
+//     if (clickedCheckbox.checked) {
+//       otherCheckbox.checked = false;
+//     }
+//   });
+// }
 // Function to handle form navigation
 function initializeFormNavigation() {
   const formSteps = [
