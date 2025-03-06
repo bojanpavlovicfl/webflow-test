@@ -324,7 +324,7 @@ function sameAsAddr(eventId, addr1, addr2, addr3, city, postcode) {
 }
 
 function updateElementValue(sourceId, targetId) {
-  console.log("targetId:", sourceId, targetId);
+  //   console.log("targetId:", sourceId, targetId);
   // Get the HTML content of the source element
   const sourceContent = document.getElementById(sourceId).value || "";
   // Set the content of the target element
