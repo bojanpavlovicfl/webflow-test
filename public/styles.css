@@ -4,8 +4,8 @@
 
 #watermark {
   position: absolute;
-  top: 150px;
-  right: 180px;
+  top: 20px;
+  right: 30px;
   font-size: 40px; /* Increase font size */
   font-weight: 900; /* Make text extra bold */
   color: black;
@@ -14,9 +14,9 @@
 }
 
 #first_top_title {
-  margin-top: 90px;
-  font-size: 48px;
-  text-align: center;
+  margin-top: 45px;
+  font-size: 32px;
+  /* text-align: center; */
 }
 #mark_dot {
   color: blue;
@@ -597,14 +597,14 @@ select {
 }
 
 /* Titles (Headings) */
-h1,
+/* h1,
 h2,
 h3,
 h4,
 h5,
 h6 {
   color: #3b88fe;
-}
+} */
 
 .h-registered {
   color: #3b88fe;
@@ -692,7 +692,7 @@ h6 {
 }
 
 #pdf-content {
-  font-size: 10px;
+  font-size: 10px !important;
 }
 
 #pdf-content h1,
@@ -701,5 +701,16 @@ h6 {
 #pdf-content h4,
 #pdf-content h5,
 #pdf-content h6 {
-  color: black;
+  color: black !important;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 25mm; /* Standard A4 margin */
+  }
+
+  #pdf-content {
+    margin: 25mm; /* Ensure content stays within safe printing area */
+  }
 }

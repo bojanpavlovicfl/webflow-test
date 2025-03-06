@@ -211,7 +211,7 @@ async function generatePDFPartner(title, formData) {
     // Generate PDF using html2pdf
     const pdf = await html2pdf()
       .set({
-        margin: [25, 30, 25, 25], // Top, Right, Bottom, Left
+        margin: [25, 20, 20, 20], // Top, Right, Bottom, Left
         filename: title,
         image: { type: "jpeg", quality: 0.98 },
         html2canvas: {
