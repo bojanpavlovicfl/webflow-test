@@ -199,42 +199,58 @@ function moveNext(current, nextId) {
 
 async function generatePDFPartner(title, formData) {
   try {
-    // Extract content inside all elements with class "w-embed" within "#pdf-content"
-    let extractedContent = Array.from(
+    // Clone content to avoid modifying the original HTML
+    let extractedContent = document.createElement("div");
+    extractedContent.innerHTML = Array.from(
       document.querySelectorAll("#pdf-content .w-embed")
     )
-      .map((element) => {
-        return element.innerHTML;
-      }) // Get inner HTML of each element
-      .join("\n"); // Join all extracted content with a newline
+      .map((element) => element.outerHTML) // Preserve full structure
+      .join("");
 
-    // Generate PDF using html2pdf
+    // Ensure CSS styles are preserved and prevent content overflow
+    extractedContent.style.width = "210mm"; // Exact A4 width
+    extractedContent.style.maxWidth = "210mm";
+    extractedContent.style.padding = "10mm"; // Prevents clipping
+    extractedContent.style.boxSizing = "border-box"; // Consistent layout
+    extractedContent.style.overflow = "hidden"; // Avoid unexpected content cutoff
+    extractedContent.style.pageBreakInside = "avoid"; // Prevents content split
+    document.body.appendChild(extractedContent);
+
+    // Convert HTML to PDF with the highest precision
     const pdf = await html2pdf()
       .set({
-        margin: [25, 20, 20, 20], // Top, Right, Bottom, Left
+        margin: [10, 10, 10, 10], // Ensure uniform spacing
         filename: title,
-        image: { type: "jpeg", quality: 0.98 },
+        image: { type: "jpeg", quality: 1 }, // Highest quality images
         html2canvas: {
-          scale: window.devicePixelRatio || 2, // Ensures high quality
-          useCORS: true, // Enables cross-origin resource sharing
+          scale: 4, // Maximized DPI for precision
+          useCORS: true, // Allow cross-origin images
+          allowTaint: true, // Fixes image-related rendering issues
           logging: false,
           scrollX: 0,
           scrollY: 0,
+          width: extractedContent.scrollWidth, // Capture exact width
+          height: extractedContent.scrollHeight, // Capture full height
+          letterRendering: true, // Better text clarity
         },
         jsPDF: {
           unit: "mm",
           format: "a4",
           orientation: "portrait",
+          precision: 16, // Highest precision for PDF layout
         },
+        pagebreak: { mode: ["css", "legacy"] }, // Ensures no broken sections
       })
       .from(extractedContent)
       .toPdf()
       .get("pdf");
+
+    document.body.removeChild(extractedContent); // Cleanup after PDF creation
     await pdf.save();
     return pdf;
   } catch (error) {
     console.error("Error generating PDF:", error);
-    throw error; // Ensure errors are propagated
+    throw error; // Ensure errors are caught
   }
 }
 
@@ -577,7 +593,10 @@ function collectFormData(formSelector) {
       data[field.name] = field.value;
     }
   });
+  const first_name = document.getElementById("Contacts-First-Name").value;
+  const last_name = document.getElementById("Contact-Last-Name").value;
 
+  data["full_name"] = `${first_name + " " + last_name}`;
   return data;
 }
 
@@ -590,10 +609,27 @@ async function generatePDFSelfBilling(title, formData) {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(14);
   // Add 'plan.com' mark at top right
+  const text = "plan.com";
+  const x = doc.internal.pageSize.width - 80;
+  const y = 25;
+
+  doc.setFont("helvetica", "bold");
   doc.setFontSize(35);
-  doc.text("plan.com", doc.internal.pageSize.width - 80, 25);
+
+  // Shadow (Gray)
+  doc.setTextColor(150, 150, 150);
+  doc.text(text, x + 1.5, y + 1.5);
+
+  // Main Text (Black)
+  doc.setTextColor(0, 0, 0);
+  doc.text(text, x, y);
+
+  // Blue Dot
+  doc.setTextColor(0, 0, 255);
+  doc.text(".", x + doc.getTextWidth("plan"), y);
 
   doc.setFontSize(20);
+  doc.setTextColor(0, 0, 0);
   doc.text("Self-Billing Agreement", 20, 45);
   doc.setFontSize(12);
   doc.text("This is an agreement to a self-billing procedure between:", 20, 60);
@@ -607,7 +643,7 @@ async function generatePDFSelfBilling(title, formData) {
   doc.setTextColor(43, 124, 246);
   doc.text(`The Supplier: `, 20, 80);
   doc.setTextColor(0, 0, 0);
-  doc.text(`${formData["supplier"] || "______________"}`, 50, 80);
+  doc.text(`${formData["supplier"] || ""}`, 50, 80);
   doc.setFontSize(10);
   doc.setTextColor(43, 124, 246);
   doc.text(`VAT number: `, doc.internal.pageSize.width / 2 + 20, 70);
@@ -684,15 +720,13 @@ async function generatePDFSelfBilling(title, formData) {
 
   doc.text(`Signed by:    Tom Wollin`, 20, 260);
   doc.text(
-    `Signed by:    ${
-      formData["Self-Billing-Full-Name"] || "_________________"
-    }`,
+    `Signed by:    ${formData["full_name"] || ""}`,
     doc.internal.pageSize.width / 2 + 20,
     260
   );
   doc.text(`On behalf of:  plan.com`, 20, 270);
   doc.text(
-    `On behalf of:  ${formData["supplier"] || "_________________"}`,
+    `On behalf of:  ${formData["supplier"] || ""}`,
     doc.internal.pageSize.width / 2 + 20,
     270
   );
