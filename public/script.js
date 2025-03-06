@@ -335,8 +335,6 @@ function otherEvent(eventID, targetID) {
 }
 
 function handleContactSameAsPrimary(selectedId) {
-  console.log("handleSameAsPrimary:", selectedId);
-
   // Define contact mappings with target fields to be copied from Master Contact
   const contactMappings = {
     "Contact-Master-User": [
@@ -376,7 +374,7 @@ function handleContactSameAsPrimary(selectedId) {
 
   // Check if the selected ID exists in the mappings
   if (contactMappings[selectedId]) {
-    console.log("contactMapping", selectedId);
+    // console.log("contactMapping", selectedId);
     // Call copyContactDetails function to copy the values
     checkCopyContactDetails(selectedId, ...contactMappings[selectedId]);
   }
@@ -384,68 +382,72 @@ function handleContactSameAsPrimary(selectedId) {
 function checkCopyContactDetails(
   eventId,
   title,
-  firstName,
-  lastName,
+  firstname,
+  lastname,
   role,
-  jobTitle,
+  jobtitle,
   mobile,
   email,
-  signatory,
-  portalUser
+  authorised,
+  portal
 ) {
   const selectElement = document.getElementById(eventId);
   if (!selectElement) return; // Exit if the dropdown doesn't exist
+  function updateContactFields(value) {
+    if (value === "Same as Primary Contact") {
+      // Define mappings between source and target elements
+      const fieldMappings = [
+        { source: "Contacts-Title", target: title },
+        { source: "Contacts-First-Name", target: firstname },
+        { source: "Contact-Last-Name", target: lastname },
+        { source: "Contact-Role-Dropdown", target: role },
+        { source: "Contacts-Job-title", target: jobtitle },
+        { source: "Contacts-Mobile-Phonenumber", target: mobile },
+        { source: "Contacts-Email", target: email },
+        {
+          source: "Contacts-Authorised-signatory-checkbox",
+          target: authorised,
+          type: "checkbox",
+        },
+        {
+          source: "Contacts-Portal-user-checkbox",
+          target: portal,
+          type: "checkbox",
+        },
+      ];
 
-  function updateContactFields() {
-    if (selectElement.value === "Same as Primary Contact") {
-      // Define mappings from Master Contact fields to target fields
-      const contactMappings = {
-        "Master-Contacts-Title": title,
-        "Master-Contacts-First-Name": firstName,
-        "Master-Contact-Last-Name": lastName,
-        "Master-Contact-Role-Dropdown": role,
-        "Master-Contacts-Job-title": jobTitle,
-        "Master-Contacts-Mobile-Phonenumber": mobile,
-        "Master-Contacts-Email": email,
-        "Master-Contacts-Authorised-signatory-checkbox": signatory,
-        "Master-Contacts-Portal-user-checkbox": portalUser,
-      };
-
-      Object.keys(contactMappings).forEach((sourceId) => {
-        const targetId = contactMappings[sourceId];
-        const sourceElement = document.getElementById(sourceId);
-        const targetElement = document.getElementById(targetId);
+      fieldMappings.forEach(({ source, target, type }) => {
+        const sourceElement = document.getElementById(source);
+        const targetElement = document.getElementById(target);
 
         if (sourceElement && targetElement) {
-          if (targetElement.type === "checkbox") {
-            targetElement.checked = sourceElement.checked; // Copy checkbox state
+          if (type === "checkbox") {
+            targetElement.checked = sourceElement.checked;
           } else {
-            targetElement.value = sourceElement.value; // Copy input/select values
+            targetElement.value = sourceElement.value;
           }
         }
       });
     }
   }
-
   // Run on page load (if preselected)
-  updateContactFields();
-
+  updateContactFields(selectElement.value);
   // Listen for changes in the dropdown
-  selectElement.addEventListener("change", updateContactFields);
+  //   selectElement.addEventListener("change", updateContactFields);
 }
 
-function checkSelectedAddressValue(selector, targetValue, callback) {
+function checkSelectedAdditionalValue(selector, targetValue, callback) {
   const dropdowns = document.querySelectorAll(selector);
-  console.log("dropdowns:", dropdowns);
+  //   console.log("dropdowns:", dropdowns);
   dropdowns.forEach((dropdown) => {
     if (dropdown.value === targetValue && typeof callback === "function") {
-      console.log(dropdown.id);
+      //   console.log(dropdown.id);
       callback(dropdown.id); // Pass the selected dropdown ID to the callback
     }
   });
 }
 function handleAddressSameAsPrimary(selectedId) {
-  console.log("handleSameAsPrimary:", selectedId);
+  //   console.log("handleAddressSameAsPrimary:", selectedId);
   const addressMappings = {
     "Trading-Address": [
       "Trading-Address-First-Line",
@@ -471,18 +473,18 @@ function handleAddressSameAsPrimary(selectedId) {
   };
 
   if (addressMappings[selectedId]) {
-    console.log("addressMapping", selectedId);
+    // console.log("addressMapping", selectedId);
     checkSameAsAddr(selectedId, ...addressMappings[selectedId]);
   }
 }
 
 function checkSameAsAddr(eventId, addr1, addr2, addr3, city, postcode) {
   const selectElement = document.getElementById(eventId);
-  console.log("checkSameAsAddr:", checkSameAsAddr);
+  //   console.log("checkSameAsAddr:", checkSameAsAddr);
   if (!selectElement) return; // Exit if the dropdown doesn't exist
 
-  function updateAddressFields() {
-    if (selectElement.value === "Same as Primary Contact") {
+  function updateAddressFields(value) {
+    if (value === "Same as registered address") {
       // Define mappings from primary registered address fields to target fields
       const idMappings = {
         "Reg-Address-First-Line": addr1,
@@ -503,12 +505,10 @@ function checkSameAsAddr(eventId, addr1, addr2, addr3, city, postcode) {
       });
     }
   }
-
   // Run once on page load (if needed)
-  updateAddressFields();
-
+  updateAddressFields(selectElement.value);
   // Attach event listener to run when selection changes
-  selectElement.addEventListener("change", updateAddressFields);
+  //   selectElement.addEventListener("change", updateAddressFields);
 }
 
 function sameAsAddr(eventId, addr1, addr2, addr3, city, postcode) {
@@ -539,7 +539,6 @@ function sameAsAddr(eventId, addr1, addr2, addr3, city, postcode) {
 }
 
 function updateElementValue(sourceId, targetId) {
-  //   console.log("targetId:", sourceId, targetId);
   // Get the HTML content of the source element
   const sourceContent = document.getElementById(sourceId).value || "";
   // Set the content of the target element
@@ -1387,12 +1386,12 @@ function initializeFormNavigation() {
     // Handle Next Button
     if (nextBtn && index < formSteps.length - 1) {
       nextBtn.addEventListener("click", function () {
-        checkSelectedAddressValue(
+        checkSelectedAdditionalValue(
           "select",
-          "Same as Primary Contact",
+          "Same as registered address",
           handleAddressSameAsPrimary
         );
-        checkSelectedContactValue(
+        checkSelectedAdditionalValue(
           "select",
           "Same as Primary Contact",
           handleContactSameAsPrimary
