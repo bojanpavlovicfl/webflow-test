@@ -974,7 +974,8 @@ async function sendPDFAsJSON(pdfBase64, webhookUrl, formSelector) {
     });
 
     if (response.ok) {
-      alert("PDF sent successfully!");
+      //   alert("PDF sent successfully!");
+      console.log("PDF sent successfully!");
       if (formSelector === "#self_billing_agreement_form") {
         document.querySelector(
           "#confirmation_self_billing_agree_form"
@@ -984,7 +985,8 @@ async function sendPDFAsJSON(pdfBase64, webhookUrl, formSelector) {
         document.querySelector("#success-page").style.display = "block";
       }
     } else {
-      alert("Failed to send PDF.");
+      //   alert("Failed to send PDF.");
+      console.log("Failed to send PDF.");
     }
   } catch (error) {
     console.error("Error sending PDF:", error);
@@ -1268,7 +1270,8 @@ function initializeMultiStepForm() {
       setCurrentDate("#date_right");
     } catch (error) {
       console.error("Error sending data to webhook:", error);
-      alert("There was an error submitting your data. Please try again.");
+      //   alert("There was an error submitting your data. Please try again.");
+      console.log("There was an error submitting your data. Please try again.");
     }
   });
 }
@@ -1670,7 +1673,8 @@ function initializePostcodeLookup(
   searchButton.addEventListener("click", function () {
     const postcode = postcodeInput.value.trim();
     if (postcode === "") {
-      alert("Please enter a postcode.");
+      console.log("Please enter a postcode.");
+      //   alert("Please enter a postcode.");
       return;
     }
 
@@ -1702,7 +1706,10 @@ function initializePostcodeLookup(
       })
       .catch((error) => {
         console.error("Error fetching address:", error);
-        alert("Could not retrieve address details. Please enter manually.");
+        console.log(
+          "Could not retrieve address details. Please enter manually."
+        );
+        // alert("Could not retrieve address details. Please enter manually.");
       });
   });
 
@@ -1734,7 +1741,8 @@ function initializePostcodeLookup(
       })
       .catch((error) => {
         console.error("Error retrieving address details:", error);
-        alert("Could not retrieve full address details.");
+        console.log("Could not retrieve full address details.");
+        // alert("Could not retrieve full address details.");
       });
   }
 }
