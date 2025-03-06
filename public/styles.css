@@ -714,3 +714,48 @@ h6 {
     margin: 25mm; /* Ensure content stays within safe printing area */
   }
 }
+
+.select-field option {
+  color: black; /* Ensures options appear correctly */
+}
+
+.select-field:valid {
+  color: rgb(0, 0, 0);
+}
+.select-field {
+  color: #b1b1b1; /* Default placeholder color */
+}
+.custom-placeholder {
+  color: #b1b1b1 !important;
+}
+
+.choices__inner {
+  border-color: #3b88fe !important;
+}
+
+#pdf-footer {
+  width: 100%;
+  background-color: #b3b3b3; /* Matches gray background from the image */
+  padding: 20px;
+  text-align: center;
+  position: relative;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.signature-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 90%;
+  margin: auto;
+}
+
+.signature-block {
+  width: 45%; /* Each signature block takes 45% width */
+  text-align: left;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+  color: black;
+}

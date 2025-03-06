@@ -187,7 +187,29 @@ document.addEventListener("DOMContentLoaded", function () {
   otherEvent("Contact-Master-User", "contacts-master-page");
   otherEvent("Contacts-Renewal-Contact", "contacts-renewal-page");
   otherEvent("Contacts-Financial-Contact", "contacts-financial-page");
+  // Usage: Call this function for any dropdown class or ID
+  setDropdownColor(".select-field");
 });
+
+function setDropdownColor(
+  selector,
+  defaultColor = "#b1b1b1",
+  selectedColor = "rgb(0, 0, 0)"
+) {
+  const dropdowns = document.querySelectorAll(selector);
+
+  dropdowns.forEach((dropdown) => {
+    function updateColor() {
+      dropdown.style.color = dropdown.value ? selectedColor : defaultColor;
+    }
+
+    // Initialize color on page load
+    updateColor();
+
+    // Update color on selection change
+    dropdown.addEventListener("change", updateColor);
+  });
+}
 
 function moveNext(current, nextId) {
   let value = current.value.replace(/\D/g, ""); // Remove non-digits
@@ -628,6 +650,7 @@ async function generatePDFSelfBilling(title, formData) {
   doc.setTextColor(0, 0, 255);
   doc.text(".", x + doc.getTextWidth("plan"), y);
 
+  doc.setFont("helvetica", "normal");
   doc.setFontSize(20);
   doc.setTextColor(0, 0, 0);
   doc.text("Self-Billing Agreement", 20, 45);
@@ -1061,6 +1084,12 @@ function initializeMultiStepForm() {
       updateElementValue("Reg-Address-First-Line", "pdf_addr_replace");
       updateElementValue("Reg-Address-City", "pdf_town_replace");
       updateElementValue("Reg-Address-Postcode", "pdf_postcode_replace");
+      //   footer
+      updateElementValue("Contacts-First-Name", "signed_by_first_name");
+      updateElementValue("Contact-Last-Name", "signed_by_last_name");
+      updateElementValue("Company-Details-Company-name", "footer_company_name");
+      setCurrentDate("#date_left");
+      setCurrentDate("#date_right");
     } catch (error) {
       console.error("Error sending data to webhook:", error);
       alert("There was an error submitting your data. Please try again.");
@@ -1135,7 +1164,8 @@ function addDefaultOptionToSelect(selectClass, text) {
       defaultOption.textContent = text;
       defaultOption.selected = true;
       defaultOption.disabled = true;
-
+      defaultOption.classList.add("default-option"); // <-- Add this line
+      defaultOption.style.color = "grey"; // <-- directly set text color here
       // Insert the default option as the first child
       select.insertBefore(defaultOption, select.firstChild);
     }
