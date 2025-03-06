@@ -334,6 +334,183 @@ function otherEvent(eventID, targetID) {
   });
 }
 
+function handleContactSameAsPrimary(selectedId) {
+  console.log("handleSameAsPrimary:", selectedId);
+
+  // Define contact mappings with target fields to be copied from Master Contact
+  const contactMappings = {
+    "Contact-Master-User": [
+      "Master-Contacts-Title",
+      "Master-Contacts-First-Name",
+      "Master-Contact-Last-Name",
+      "Master-Contact-Role-Dropdown",
+      "Master-Contacts-Job-title",
+      "Master-Contacts-Mobile-Phonenumber",
+      "Master-Contacts-Email",
+      "Master-Contacts-Authorised-signatory-checkbox",
+      "Master-Contacts-Portal-user-checkbox",
+    ],
+    "Contacts-Renewal-Contact": [
+      "Renewal-Contacts-Title",
+      "Renewal-Contacts-First-Name",
+      "Renewal-Contact-Last-Name",
+      "Renewal-Contact-Role-Dropdown",
+      "Renewal-Contacts-Job-title",
+      "Renewal-Contacts-Mobile-Phonenumber",
+      "Renewal-Contacts-Email",
+      "Renewal-Contacts-Authorised-signatory-checkbox",
+      "Renewal-Contacts-Portal-user-checkbox",
+    ],
+    "Contacts-Financial-Contact": [
+      "Financial-Contacts-Title",
+      "Financial-Contacts-First-Name",
+      "Financial-Contact-Last-Name",
+      "Financial-Contact-Role-Dropdown",
+      "Financial-Contacts-Job-title",
+      "Financial-Contacts-Mobile-Phonenumber",
+      "Financial-Contacts-Email",
+      "Financial-Contacts-Authorised-signatory-checkbox",
+      "Financial-Contacts-Portal-user-checkbox",
+    ],
+  };
+
+  // Check if the selected ID exists in the mappings
+  if (contactMappings[selectedId]) {
+    console.log("contactMapping", selectedId);
+    // Call copyContactDetails function to copy the values
+    checkCopyContactDetails(selectedId, ...contactMappings[selectedId]);
+  }
+}
+function checkCopyContactDetails(
+  eventId,
+  title,
+  firstName,
+  lastName,
+  role,
+  jobTitle,
+  mobile,
+  email,
+  signatory,
+  portalUser
+) {
+  const selectElement = document.getElementById(eventId);
+  if (!selectElement) return; // Exit if the dropdown doesn't exist
+
+  function updateContactFields() {
+    if (selectElement.value === "Same as Primary Contact") {
+      // Define mappings from Master Contact fields to target fields
+      const contactMappings = {
+        "Master-Contacts-Title": title,
+        "Master-Contacts-First-Name": firstName,
+        "Master-Contact-Last-Name": lastName,
+        "Master-Contact-Role-Dropdown": role,
+        "Master-Contacts-Job-title": jobTitle,
+        "Master-Contacts-Mobile-Phonenumber": mobile,
+        "Master-Contacts-Email": email,
+        "Master-Contacts-Authorised-signatory-checkbox": signatory,
+        "Master-Contacts-Portal-user-checkbox": portalUser,
+      };
+
+      Object.keys(contactMappings).forEach((sourceId) => {
+        const targetId = contactMappings[sourceId];
+        const sourceElement = document.getElementById(sourceId);
+        const targetElement = document.getElementById(targetId);
+
+        if (sourceElement && targetElement) {
+          if (targetElement.type === "checkbox") {
+            targetElement.checked = sourceElement.checked; // Copy checkbox state
+          } else {
+            targetElement.value = sourceElement.value; // Copy input/select values
+          }
+        }
+      });
+    }
+  }
+
+  // Run on page load (if preselected)
+  updateContactFields();
+
+  // Listen for changes in the dropdown
+  selectElement.addEventListener("change", updateContactFields);
+}
+
+function checkSelectedAddressValue(selector, targetValue, callback) {
+  const dropdowns = document.querySelectorAll(selector);
+  console.log("dropdowns:", dropdowns);
+  dropdowns.forEach((dropdown) => {
+    if (dropdown.value === targetValue && typeof callback === "function") {
+      console.log(dropdown.id);
+      callback(dropdown.id); // Pass the selected dropdown ID to the callback
+    }
+  });
+}
+function handleAddressSameAsPrimary(selectedId) {
+  console.log("handleSameAsPrimary:", selectedId);
+  const addressMappings = {
+    "Trading-Address": [
+      "Trading-Address-First-Line",
+      "Trading-Address-Second-Line",
+      "Trading-Address-Third-Line",
+      "Trading-Address-City",
+      "Trading-Address-Postcode",
+    ],
+    "Billing-Address": [
+      "Billing-Address-First-Line",
+      "Billing-Address-Second-Line",
+      "Billing-Address-Third-Line",
+      "Billing-Address-City",
+      "Billing-Address-Postcode",
+    ],
+    "Delivery-Address": [
+      "Delivery-Address-First-Line",
+      "Delivery-Address-Second-Line",
+      "Delivery-Address-Third-Line",
+      "Delivery-Address-City",
+      "Delivery-Address-Postcode",
+    ],
+  };
+
+  if (addressMappings[selectedId]) {
+    console.log("addressMapping", selectedId);
+    checkSameAsAddr(selectedId, ...addressMappings[selectedId]);
+  }
+}
+
+function checkSameAsAddr(eventId, addr1, addr2, addr3, city, postcode) {
+  const selectElement = document.getElementById(eventId);
+  console.log("checkSameAsAddr:", checkSameAsAddr);
+  if (!selectElement) return; // Exit if the dropdown doesn't exist
+
+  function updateAddressFields() {
+    if (selectElement.value === "Same as Primary Contact") {
+      // Define mappings from primary registered address fields to target fields
+      const idMappings = {
+        "Reg-Address-First-Line": addr1,
+        "Reg-Address-Second-Line": addr2,
+        "Reg-Address-Third-Line": addr3,
+        "Reg-Address-City": city,
+        "Reg-Address-Postcode": postcode,
+      };
+
+      Object.keys(idMappings).forEach((sourceId) => {
+        const targetId = idMappings[sourceId];
+        const sourceElement = document.getElementById(sourceId);
+        const targetElement = document.getElementById(targetId);
+
+        if (sourceElement && targetElement) {
+          targetElement.value = sourceElement.value; // Copy the value
+        }
+      });
+    }
+  }
+
+  // Run once on page load (if needed)
+  updateAddressFields();
+
+  // Attach event listener to run when selection changes
+  selectElement.addEventListener("change", updateAddressFields);
+}
+
 function sameAsAddr(eventId, addr1, addr2, addr3, city, postcode) {
   const selectElement = document.getElementById(eventId);
 
@@ -1210,6 +1387,16 @@ function initializeFormNavigation() {
     // Handle Next Button
     if (nextBtn && index < formSteps.length - 1) {
       nextBtn.addEventListener("click", function () {
+        checkSelectedAddressValue(
+          "select",
+          "Same as Primary Contact",
+          handleAddressSameAsPrimary
+        );
+        checkSelectedContactValue(
+          "select",
+          "Same as Primary Contact",
+          handleContactSameAsPrimary
+        );
         if (!validateAllFields(form)) return; // Validate before proceeding
         navigateToForm(index + 1);
       });
