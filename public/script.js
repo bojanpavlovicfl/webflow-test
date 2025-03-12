@@ -42,29 +42,8 @@ document.addEventListener("DOMContentLoaded", function () {
     "#Bank-Address-City",
     "#Bank-Address-postcode"
   );
-  //   initializeCheckboxToggle(
-  //     "#criteria_third_party_billing_chkbox",
-  //     "#criteria_third_party_billing_input"
-  //   );
-  //   initializeCheckboxToggle(
-  //     "#criteria_third_party_contract_chkbox",
-  //     "#criteria_third_party_contract_input"
-  //   );
-  //   initializeCheckboxToggle(
-  //     "#criteria_third_party_wholesale_chkbox",
-  //     "#criteria_third_party_wholesale"
-  //   );
   initializeMultiSelect("#criteria_other_providers", "Select Other providers");
   initializeMultiSelect("#Criteria-Channels", "Select Channels");
-  // Franchise feature
-  //   toggleCheckboxes(
-  //     "Criteria-Franchise-checkbox",
-  //     "Criteria-Franchisee-Checkbox"
-  //   );
-  //   toggleCheckboxes(
-  //     "Criteria-Franchisee-Checkbox",
-  //     "Criteria-Franchise-checkbox"
-  //   );
   addDefaultOptionToSelect("set-default-select", "Select");
   addDefaultOptionToSelect("select-modern", "Select your address");
   initializeMultiStepForm();
@@ -106,7 +85,7 @@ document.addEventListener("DOMContentLoaded", function () {
     nextForm: "#confirmation_self_billing_agree_form",
     formSelector: "#self_billing_agreement_form",
     title: "Self Billing Agreement Confirmation",
-    downloadFilename: "self_billiing_agreement.pdf",
+    downloadFilename: "Self-Billing Agreement.pdf",
     emailFieldName: "email",
     webhookUrl:
       "https://prod-09.uksouth.logic.azure.com:443/workflows/adc2994fde0c492981e334d10318e3cc/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ODswH80OD7bbrkK12RH3snBpuArTY2Xkurs26K6jDwg",
@@ -221,42 +200,131 @@ function moveNext(current, nextId) {
 
 async function generatePDFPartner(title, formData) {
   try {
-    // Clone content to avoid modifying the original HTML
+    // Clone content safely
     let extractedContent = document.createElement("div");
     extractedContent.innerHTML = Array.from(
       document.querySelectorAll("#pdf-content .w-embed")
     )
-      .map((element) => element.outerHTML) // Preserve full structure
+      .map((element) => element.outerHTML)
       .join("");
 
+    extractedContent.style.fontSize = "9px"; // Adjust as needed
+    // Change font size for headers (h1 to h6)
+    extractedContent
+      .querySelectorAll("h1")
+      .forEach((el) => (el.style.fontSize = "17px"));
+    extractedContent
+      .querySelectorAll("h2")
+      .forEach((el) => (el.style.fontSize = "15px"));
+    extractedContent
+      .querySelectorAll("h3")
+      .forEach((el) => (el.style.fontSize = "13px"));
+    extractedContent
+      .querySelectorAll("h4")
+      .forEach((el) => (el.style.fontSize = "12px"));
+    extractedContent
+      .querySelectorAll("h5")
+      .forEach((el) => (el.style.fontSize = "11px"));
+    extractedContent
+      .querySelectorAll("h6")
+      .forEach((el) => (el.style.fontSize = "10px"));
+
+    extractedContent.style.lineHeight = "1.3"; // Adjust as needed, 1 is compact
+    extractedContent
+      .querySelectorAll("h1, h2, h3, h4, h5, h6")
+      .forEach((el) => {
+        el.style.lineHeight = "1"; // Adjust as needed (1 is compact, 1.2 is standard)
+      });
+    // Delay to allow images and styles to load properly
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    // Define high-quality PDF options
+    const options = {
+      margin: [15, 15, 15, 15], // Reduce margins slightly
+      filename: title,
+      image: { type: "jpeg", quality: 1 }, // Use PNG for higher quality
+      html2canvas: {
+        scale: 1, // Increase scale for high resolution
+        useCORS: true,
+        logging: false,
+        scrollX: 0,
+        scrollY: 0,
+        allowTaint: true,
+      },
+      jsPDF: {
+        unit: "mm",
+        format: "a4",
+        orientation: "portrait",
+        precision: 12, // Keep precision high
+      },
+    };
+
+    // Convert content to PDF
     const pdf = await html2pdf()
-      .set({
-        margin: [15, 15, 15, 15], // Top, Right, Bottom, Left
-        filename: title,
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: {
-          scale: window.devicePixelRatio || 2, // Ensures high quality
-          useCORS: true, // Enables cross-origin resource sharing
-          logging: false,
-          scrollX: 0,
-          scrollY: 0,
-        },
-        jsPDF: {
-          unit: "mm",
-          format: "a4",
-          orientation: "portrait",
-          precision: 12, // Highest precision for PDF layout
-        },
-      })
+      .set(options)
       .from(extractedContent)
       .toPdf()
       .get("pdf");
+    const firstName =
+      document.getElementById("Contacts-First-Name").value || "";
+    const lastName = document.getElementById("Contact-Last-Name").value || "";
+    const companyName =
+      document.getElementById("Company-Details-Company-name").value || "";
+    // Get current date in DD/MM/YYYY format
+    const today = new Date();
+    const formattedDate = `${today.getDate()}/${
+      today.getMonth() + 1
+    }/${today.getFullYear()}`;
+    // Get total number of pages
+    const totalPages = pdf.internal.getNumberOfPages();
 
-    await pdf.save();
+    // Get the footer HTML content
+    //let footerContent = document.querySelector("#pdf-footer").innerHTML;
+
+    // Add footer content to the last page
+    pdf.setPage(totalPages);
+
+    // Get page width and height
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    // Draw a grey rectangle for the footer background
+    const footerHeight = 30; // Height of the footer background
+    pdf.setFillColor(200, 200, 200); // Grey color (RGB)
+    pdf.rect(0, pageHeight - footerHeight, pageWidth, footerHeight, "F"); // 'F' for fill
+
+    // Set font for the footer text
+    pdf.setFontSize(10);
+    pdf.setTextColor(0, 0, 0); // Black text
+
+    // Add the footer text content (left side)
+    pdf.text("Signed by: Tom Wollin", 25, pageHeight - footerHeight + 10); // Left signature
+    pdf.text("On behalf of: plan.com", 25, pageHeight - footerHeight + 15);
+    pdf.text(`Date: ${formattedDate}`, 25, pageHeight - footerHeight + 20);
+
+    // Add the footer text content (right side)
+    pdf.text(
+      `Signed by: ${firstName} ${lastName}`,
+      pageWidth / 2 + 25,
+      pageHeight - footerHeight + 10
+    ); // Right signature
+    pdf.text(
+      `On behalf of: ${companyName}`,
+      pageWidth / 2 + 25,
+      pageHeight - footerHeight + 15
+    );
+    pdf.text(
+      `Date: ${formattedDate}`,
+      pageWidth / 2 + 25,
+      pageHeight - footerHeight + 20
+    );
+
+    // Save the PDF
+    await pdf.save("Partner Agreement.pdf");
     return pdf;
   } catch (error) {
     console.error("Error generating PDF:", error);
-    throw error; // Ensure errors are caught
+    throw error;
   }
 }
 
@@ -796,11 +864,11 @@ async function generatePDFSelfBilling(title, formData) {
   const y = 25;
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(35);
+  doc.setFontSize(38);
 
   // Shadow (Gray)
-  doc.setTextColor(150, 150, 150);
-  doc.text(text, x + 1.5, y + 1.5);
+  // doc.setTextColor(150, 150, 150);
+  // doc.text(text, x + 1.5, y + 1.5);
 
   // Main Text (Black)
   doc.setTextColor(0, 0, 0);
@@ -1246,12 +1314,6 @@ function initializeMultiStepForm() {
       updateElementValue("Reg-Address-First-Line", "pdf_addr_replace");
       updateElementValue("Reg-Address-City", "pdf_town_replace");
       updateElementValue("Reg-Address-Postcode", "pdf_postcode_replace");
-      //   footer
-      updateElementValue("Contacts-First-Name", "signed_by_first_name");
-      updateElementValue("Contact-Last-Name", "signed_by_last_name");
-      updateElementValue("Company-Details-Company-name", "footer_company_name");
-      setCurrentDate("#date_left");
-      setCurrentDate("#date_right");
     } catch (error) {
       console.error("Error sending data to webhook:", error);
       //   alert("There was an error submitting your data. Please try again.");
@@ -1334,21 +1396,7 @@ function addDefaultOptionToSelect(selectClass, text) {
     }
   });
 }
-// Franchise checkboxes
-// function toggleCheckboxes(clicked, other) {
-//   const clickedCheckbox = document.getElementById(clicked);
-//   const otherCheckbox = document.getElementById(other);
-//   if (!clickedCheckbox || !otherCheckbox) {
-//     console.error(`One or both checkboxes not found: ${clicked}, ${other}`);
-//     return; // Exit the function if elements don't exist
-//   }
-//   clickedCheckbox.addEventListener("change", function () {
-//     if (clickedCheckbox.checked) {
-//       otherCheckbox.checked = false;
-//     }
-//   });
-// }
-// Function to handle form navigation
+
 function initializeFormNavigation() {
   const formSteps = [
     "#contacts_form",
