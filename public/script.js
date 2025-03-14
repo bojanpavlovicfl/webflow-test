@@ -13,13 +13,7 @@ document.addEventListener("DOMContentLoaded", function () {
     "#Billing-Address-City",
     "#Billing-Address-Postcode"
   );
-  initializePostcodeLookup(
-    "#trading-postcode-search",
-    "#trading-postcode-search-button",
-    "#Trading-Address-First-Line",
-    "#Trading-Address-City",
-    "#Trading-Address-Postcode"
-  );
+
   initializeFormNavigation();
   initializeCheckboxToggle(
     "#Company-Details-VAT-registered-checkbox",
@@ -29,18 +23,27 @@ document.addEventListener("DOMContentLoaded", function () {
   initializeDatePicker("#Company-Details-Date-picker");
 
   initializePostcodeLookup(
-    "#postcode-search",
-    "#postcode-search-button",
+    "#reg-search",
+    "#reg-search-button",
     "#Reg-Address-First-Line",
     "#Reg-Address-City",
     "#Reg-Address-Postcode"
   );
+
+  initializePostcodeLookup(
+    "#trading-search",
+    "#trading-search-button",
+    "#Trading-Address-First-Line",
+    "#Trading-Address-City",
+    "#Trading-Address-Postcode",
+    "Trading"
+  );
   initializePostcodeLookup(
     "#bank-postcode-search",
     "#bank-postcode-search-button",
-    "#Bank-Address-first-line",
+    "#Bank-Address-First-Line",
     "#Bank-Address-City",
-    "#Bank-Address-postcode"
+    "#Bank-Address-Postcode"
   );
   initializeMultiSelect("#criteria_other_providers", "Select Other providers");
   initializeMultiSelect("#Criteria-Channels", "Select Channels");
@@ -505,21 +508,21 @@ function handleAddressSameAsPrimary(selectedId) {
       "Trading-Address-First-Line",
       "Trading-Address-Second-Line",
       "Trading-Address-Third-Line",
-      "Trading-Address-City",
+      "City-Trading-Address",
       "Trading-Address-Postcode",
     ],
     "Billing-Address": [
       "Billing-Address-First-Line",
       "Billing-Address-Second-Line",
       "Billing-Address-Third-Line",
-      "Billing-Address-City",
+      "City-Billing-Address",
       "Billing-Address-Postcode",
     ],
     "Delivery-Address": [
       "Delivery-Address-First-Line",
       "Delivery-Address-Second-Line",
       "Delivery-Address-Third-Line",
-      "Delivery-Address-City",
+      "City-Delivery-Address",
       "Delivery-Address-Postcode",
     ],
   };
@@ -859,24 +862,27 @@ async function generatePDFSelfBilling(title, formData) {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(14);
   // Add 'plan.com' mark at top right
-  const text = "plan.com";
+  // Define position
+  const text = "plan";
   const x = doc.internal.pageSize.width - 80;
   const y = 25;
+  const dotX = x + 29; // Adjust position for dot
+  const dotY = 24; // Adjust vertical position for dot
 
+  // Set custom font and bold style
   doc.setFont("helvetica", "bold");
   doc.setFontSize(38);
 
-  // Shadow (Gray)
-  // doc.setTextColor(150, 150, 150);
-  // doc.text(text, x + 1.5, y + 1.5);
-
-  // Main Text (Black)
+  // Add "plan"
   doc.setTextColor(0, 0, 0);
   doc.text(text, x, y);
 
-  // Blue Dot
-  doc.setTextColor(0, 0, 255);
-  doc.text(".", x + doc.getTextWidth("plan"), y);
+  // Draw a perfect round dot
+  doc.setFillColor(0, 0, 0); // Black color
+  doc.circle(dotX, dotY, 1, "F"); // Small filled circle
+
+  // Add "com" after the dot
+  doc.text("com", dotX + 1, y);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(20);
@@ -1397,6 +1403,7 @@ function addDefaultOptionToSelect(selectClass, text) {
   });
 }
 
+// footer code
 function initializeFormNavigation() {
   const formSteps = [
     "#contacts_form",
@@ -1653,7 +1660,8 @@ function initializePostcodeLookup(
   searchButtonSelector,
   addressFieldSelector,
   cityFieldSelector,
-  postcodeFieldSelector
+  postcodeFieldSelector,
+  dropdownId = "sel"
 ) {
   const postcodeInput = document.querySelector(postcodeInputSelector);
   const searchButton = document.querySelector(searchButtonSelector);
@@ -1672,36 +1680,6 @@ function initializePostcodeLookup(
     return;
   }
 
-  // Create dropdown to show address options
-  const addressDropdown = document.createElement("select");
-  // Set the id attribute
-  // addressDropdown.id = "addressDropdown";
-  // Set the class attribute
-  addressDropdown.className = "select-modern";
-
-  // Add a placeholder option
-  const placeholderOption = document.createElement("option");
-  placeholderOption.value = "";
-  placeholderOption.textContent = "Select your address";
-  placeholderOption.selected = true;
-  placeholderOption.disabled = true;
-  addressDropdown.appendChild(placeholderOption);
-
-  // Set background image for dropdown using Font Awesome icon (caret-down)
-  //addressDropdown.style.backgroundImage = "url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/svgs/solid/caret-down.svg')";
-  //addressDropdown.style.backgroundRepeat = "no-repeat";
-  //addressDropdown.style.backgroundPosition = "right center";
-  //addressDropdown.style.backgroundSize = "16px 16px"; // Adjust size
-
-  // Initially hide the dropdown until options are loaded
-  addressDropdown.style.display = "none";
-
-  // Insert the dropdown after the postcode input
-  postcodeInput.parentNode.insertBefore(
-    addressDropdown,
-    postcodeInput.nextSibling
-  );
-
   searchButton.addEventListener("click", function () {
     const postcode = postcodeInput.value.trim();
     if (postcode === "") {
@@ -1709,7 +1687,36 @@ function initializePostcodeLookup(
       //   alert("Please enter a postcode.");
       return;
     }
-
+    // Create dropdown to show address options
+    const addressDropdown = document.createElement("select");
+    // Set the id attribute
+    addressDropdown.id = `${dropdownId}-dropdown`;
+    addressDropdown.name = `${dropdownId}-dropdown`;
+    // Set the class attribute
+    addressDropdown.className = "select-modern";
+    //addressDropdown.setAttribute("autocomplete", "off"); // Disable autofill
+    // Add a placeholder option
+    const placeholderOption = document.createElement("option");
+    placeholderOption.value = "";
+    placeholderOption.textContent = "Select your address";
+    placeholderOption.selected = true;
+    placeholderOption.disabled = true;
+    addressDropdown.appendChild(placeholderOption);
+    // Initially hide the dropdown until options are loaded
+    addressDropdown.style.display = "none";
+    // Insert the dropdown after the postcode input
+    postcodeInput.parentNode.insertBefore(
+      addressDropdown,
+      postcodeInput.nextSibling
+    );
+    // Fetch and populate fields when address is selected
+    addressDropdown.addEventListener("change", function () {
+      const selectedId = addressDropdown.value;
+      console.log("selectedId:", selectedId);
+      if (selectedId) {
+        fetchAddressDetails(selectedId); // Only populate when the user selects an address
+      }
+    });
     const apiKey = "XE49-PR11-PE38-FF69"; // Replace with your Loqate API Key
     const loqateUrl = `https://api.addressy.com/Capture/Interactive/Find/v1.10/json3.ws?Key=${apiKey}&Text=${postcode}&IsMiddleware=false&Countries=GB`;
 
@@ -1743,14 +1750,6 @@ function initializePostcodeLookup(
         );
         // alert("Could not retrieve address details. Please enter manually.");
       });
-  });
-
-  // Fetch and populate fields when address is selected
-  addressDropdown.addEventListener("change", function () {
-    const selectedId = addressDropdown.value;
-    if (selectedId) {
-      fetchAddressDetails(selectedId); // Only populate when the user selects an address
-    }
   });
 
   // Function to fetch full address details
